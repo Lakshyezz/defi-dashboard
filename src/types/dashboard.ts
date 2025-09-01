@@ -3,10 +3,7 @@
 // Extend Window interface for MetaMask
 declare global {
   interface Window {
-    ethereum?: {
-      request: (args: { method: string }) => Promise<string[]>;
-      isMetaMask?: boolean;
-    };
+    ethereum?: any; // eslint-disable-line @typescript-eslint/no-explicit-any
   }
 }
 

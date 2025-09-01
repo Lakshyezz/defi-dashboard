@@ -120,3 +120,16 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Add this to your globals.css */
+[data-rk] {
+  z-index: 9999 !important;
+}
+
+[data-rk] div[role="dialog"] {
+  position: fixed !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
+  z-index: 9999 !important;
+}
