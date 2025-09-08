@@ -20,5 +20,3 @@ export const config = getDefaultConfig({
   ],
   ssr: true, // If your dApp uses server side rendering (SSR)
 });
-
-console.log("here in wagmi.ts" , process.env.NEXT_PUBLIC_WC_PROJECT_ID);

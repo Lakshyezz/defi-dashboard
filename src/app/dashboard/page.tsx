@@ -1,40 +1,41 @@
-'use client';
-import React, { useState, useEffect, useMemo } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { 
-  Lock, 
-  TrendingUp, 
-  DollarSign, 
-  Target, 
-  BarChart3, 
+"use client";
+import React, { useState, useEffect, useMemo } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { StatCard } from "@/components/ui/stat-card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Lock,
+  TrendingUp,
+  DollarSign,
+  Target,
+  BarChart3,
   ArrowLeft,
   Home,
   Activity,
-  Settings
-} from 'lucide-react';
+  Settings,
+} from "lucide-react";
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts";
 import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
-import { ConnectButton } from '@rainbow-me/rainbowkit';
-import { useAccount, useDisconnect } from 'wagmi';
+import { ConnectButton } from "@rainbow-me/rainbowkit";
+import { useAccount, useDisconnect } from "wagmi";
 
 // Import types from types file
-import type { 
-  CategoryType, 
-  PoolData, 
-  HistoricalDataPoint, 
-  ProcessedDataPoint
-} from '../../types/dashboard';
+import type {
+  CategoryType,
+  PoolData,
+  HistoricalDataPoint,
+  ProcessedDataPoint,
+} from "../../types/dashboard";
 
 // Custom Connect Button Component
 const CustomConnectButton = () => {
-  const { } = useAccount();
-  const { } = useDisconnect();
+  const {} = useAccount();
+  const {} = useDisconnect();
 
   return (
     <ConnectButton.Custom>
@@ -47,21 +48,21 @@ const CustomConnectButton = () => {
         authenticationStatus,
         mounted,
       }) => {
-        const ready = mounted && authenticationStatus !== 'loading';
+        const ready = mounted && authenticationStatus !== "loading";
         const connected =
           ready &&
           account &&
           chain &&
-          (!authenticationStatus || authenticationStatus === 'authenticated');
+          (!authenticationStatus || authenticationStatus === "authenticated");
 
         return (
           <div
             {...(!ready && {
-              'aria-hidden': true,
+              "aria-hidden": true,
               style: {
                 opacity: 0,
-                pointerEvents: 'none',
-                userSelect: 'none',
+                pointerEvents: "none",
+                userSelect: "none",
               },
             })}
           >
@@ -76,7 +77,11 @@ const CustomConnectButton = () => {
 
               if (chain.unsupported) {
                 return (
-                  <Button onClick={openChainModal} type="button" variant="destructive">
+                  <Button
+                    onClick={openChainModal}
+                    type="button"
+                    variant="destructive"
+                  >
                     Wrong Network
                   </Button>
                 );
@@ -106,58 +111,70 @@ const CustomConnectButton = () => {
 const DeFiDashboard = () => {
   // Use wagmi hook for wallet connection state
   const { address, isConnected } = useAccount();
-  
+
   // State with proper TypeScript types
   const [pools, setPools] = useState<PoolData[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
-  const [selectedCategory, setSelectedCategory] = useState<CategoryType>('All');
+  const [selectedCategory, setSelectedCategory] = useState<CategoryType>("All");
   const [selectedPool, setSelectedPool] = useState<PoolData | null>(null);
-  const [historicalData, setHistoricalData] = useState<ProcessedDataPoint[]>([]);
+  const [historicalData, setHistoricalData] = useState<ProcessedDataPoint[]>(
+    []
+  );
   const [chartLoading, setChartLoading] = useState<boolean>(false);
 
   // Specific pool IDs from requirements
-  const targetPoolIds = useMemo(() => [
-    'db678df9-3281-4bc2-a8bb-01160ffd6d48', // aave-v3
-    'c1ca08e4-d618-415e-ad63-fcec58705469', // compound-v3
-    '8edfdf02-cdbb-43f7-bca6-954e5fe56813', // maple
-    '747c1d2a-c668-4682-b9f9-296708a3dd90', // lido
-    '80b8bf92-b953-4c20-98ea-c9653ef2bb98', // binance-staked-eth
-    '90bfb3c2-5d35-4959-a275-ba5085b08aa3', // stader
-    '107fb915-ab29-475b-b526-d0ed0d3e6110', // cian-yield-layer
-    '05a3d186-2d42-4e21-b1f0-68c079d22677', // yearn-finance
-    '1977885c-d5ae-4c9e-b4df-863b7e1578e6', // beefy
-  ], []);
+  const targetPoolIds = useMemo(
+    () => [
+      "db678df9-3281-4bc2-a8bb-01160ffd6d48", // aave-v3
+      "c1ca08e4-d618-415e-ad63-fcec58705469", // compound-v3
+      "8edfdf02-cdbb-43f7-bca6-954e5fe56813", // maple
+      "747c1d2a-c668-4682-b9f9-296708a3dd90", // lido
+      "80b8bf92-b953-4c20-98ea-c9653ef2bb98", // binance-staked-eth
+      "90bfb3c2-5d35-4959-a275-ba5085b08aa3", // stader
+      "107fb915-ab29-475b-b526-d0ed0d3e6110", // cian-yield-layer
+      "05a3d186-2d42-4e21-b1f0-68c079d22677", // yearn-finance
+      "1977885c-d5ae-4c9e-b4df-863b7e1578e6", // beefy
+    ],
+    []
+  );
 
   // Category mapping
-  const categoryMapping = useMemo(() => ({
-    'db678df9-3281-4bc2-a8bb-01160ffd6d48': 'Lending' as CategoryType,
-    'c1ca08e4-d618-415e-ad63-fcec58705469': 'Lending' as CategoryType,
-    '8edfdf02-cdbb-43f7-bca6-954e5fe56813': 'Lending' as CategoryType,
-    '747c1d2a-c668-4682-b9f9-296708a3dd90': 'Liquid Staking' as CategoryType,
-    '80b8bf92-b953-4c20-98ea-c9653ef2bb98': 'Liquid Staking' as CategoryType,
-    '90bfb3c2-5d35-4959-a275-ba5085b08aa3': 'Liquid Staking' as CategoryType,
-    '107fb915-ab29-475b-b526-d0ed0d3e6110': 'Yield Aggregator' as CategoryType,
-    '05a3d186-2d42-4e21-b1f0-68c079d22677': 'Yield Aggregator' as CategoryType,
-    '1977885c-d5ae-4c9e-b4df-863b7e1578e6': 'Yield Aggregator' as CategoryType,
-  }), []);
+  const categoryMapping = useMemo(
+    () => ({
+      "db678df9-3281-4bc2-a8bb-01160ffd6d48": "Lending" as CategoryType,
+      "c1ca08e4-d618-415e-ad63-fcec58705469": "Lending" as CategoryType,
+      "8edfdf02-cdbb-43f7-bca6-954e5fe56813": "Lending" as CategoryType,
+      "747c1d2a-c668-4682-b9f9-296708a3dd90": "Liquid Staking" as CategoryType,
+      "80b8bf92-b953-4c20-98ea-c9653ef2bb98": "Liquid Staking" as CategoryType,
+      "90bfb3c2-5d35-4959-a275-ba5085b08aa3": "Liquid Staking" as CategoryType,
+      "107fb915-ab29-475b-b526-d0ed0d3e6110":
+        "Yield Aggregator" as CategoryType,
+      "05a3d186-2d42-4e21-b1f0-68c079d22677":
+        "Yield Aggregator" as CategoryType,
+      "1977885c-d5ae-4c9e-b4df-863b7e1578e6":
+        "Yield Aggregator" as CategoryType,
+    }),
+    []
+  );
 
   // Fetch pools data
   useEffect(() => {
     const fetchPools = async () => {
       try {
-        const response = await fetch('https://yields.llama.fi/pools');
+        const response = await fetch("https://yields.llama.fi/pools");
         const data = await response.json();
-        
+
         const filteredPools: PoolData[] = data.data
           .filter((pool: PoolData) => targetPoolIds.includes(pool.pool))
           .map((pool: PoolData) => ({
             ...pool,
-            category: categoryMapping[pool.pool as keyof typeof categoryMapping]
+            category:
+              categoryMapping[pool.pool as keyof typeof categoryMapping],
           }));
-        
+
         setPools(filteredPools);
       } catch (error) {
-        console.error('Error fetching pools:', error);
+        console.error("Error fetching pools:", error);
       } finally {
         setLoading(false);
       }
@@ -167,21 +184,22 @@ const DeFiDashboard = () => {
   }, [categoryMapping, targetPoolIds]);
 
   // Filter pools by category
-  const filteredPools = selectedCategory === 'All' 
-    ? pools 
-    : pools.filter(pool => pool.category === selectedCategory);
+  const filteredPools =
+    selectedCategory === "All"
+      ? pools
+      : pools.filter((pool) => pool.category === selectedCategory);
 
   // Format functions
   const formatNumber = (num: number | null | undefined): string => {
-    if (!num) return 'N/A';
+    if (!num) return "N/A";
     if (num >= 1e9) return `$${(num / 1e9).toFixed(2)}B`;
     if (num >= 1e6) return `$${(num / 1e6).toFixed(2)}M`;
     if (num >= 1e3) return `$${(num / 1e3).toFixed(2)}K`;
     return `$${num.toFixed(2)}`;
   };
 
-  const formatPercent = (num: number | null | undefined): string => 
-    num ? `${num.toFixed(2)}%` : 'N/A';
+  const formatPercent = (num: number | null | undefined): string =>
+    num ? `${num.toFixed(2)}%` : "N/A";
 
   // Fetch historical data
   const fetchHistoricalData = async (poolId: string): Promise<void> => {
@@ -192,7 +210,7 @@ const DeFiDashboard = () => {
       const processedData = processMonthlyData(data.data);
       setHistoricalData(processedData);
     } catch (error) {
-      console.error('Error fetching historical data:', error);
+      console.error("Error fetching historical data:", error);
       setHistoricalData([]);
     } finally {
       setChartLoading(false);
@@ -200,47 +218,70 @@ const DeFiDashboard = () => {
   };
 
   // Process monthly data
-  const processMonthlyData = (rawData: HistoricalDataPoint[]): ProcessedDataPoint[] => {
+  const processMonthlyData = (
+    rawData: HistoricalDataPoint[]
+  ): ProcessedDataPoint[] => {
     if (!rawData || rawData.length === 0) return [];
-    
-    const sortedData = rawData.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+
+    const sortedData = rawData.sort(
+      (a, b) =>
+        new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+    );
     const now = new Date();
     const twelveMonthsAgo = new Date(now.getFullYear() - 1, now.getMonth(), 1);
     const monthlyData: ProcessedDataPoint[] = [];
     const monthlyGroups: Record<string, HistoricalDataPoint[]> = {};
-    
+
     for (const dataPoint of sortedData) {
       const date = new Date(dataPoint.timestamp);
       if (date < twelveMonthsAgo) continue;
-      
-      const monthKey = `${date.getUTCFullYear()}-${String(date.getUTCMonth()).padStart(2, '0')}`;
-      
+
+      const monthKey = `${date.getUTCFullYear()}-${String(
+        date.getUTCMonth()
+      ).padStart(2, "0")}`;
+
       if (!monthlyGroups[monthKey]) {
         monthlyGroups[monthKey] = [];
       }
       monthlyGroups[monthKey].push(dataPoint);
     }
-    
-    Object.keys(monthlyGroups).sort().forEach(monthKey => {
-      const monthData = monthlyGroups[monthKey];
-      const bestPoint = monthData.find(point => new Date(point.timestamp).getUTCDate() === 1) ||
-                      monthData.find(point => new Date(point.timestamp).getUTCDate() <= 5) ||
-                      monthData[0];
-      
-      if (bestPoint) {
-        const date = new Date(bestPoint.timestamp);
-        monthlyData.push({
-          date: date.toLocaleDateString('en-US', { month: 'short', year: 'numeric', timeZone: 'UTC' }),
-          timestamp: bestPoint.timestamp,
-          apy: bestPoint.apy || 0,
-          tvl: bestPoint.tvlUsd || 0,
-          actualDay: date.getUTCDate(),
-          fullDate: date.toISOString().split('T')[0]
-        });
-      }
-    });
-    
-    return monthlyData.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()).slice(-12);
+
+    Object.keys(monthlyGroups)
+      .sort()
+      .forEach((monthKey) => {
+        const monthData = monthlyGroups[monthKey];
+        const bestPoint =
+          monthData.find(
+            (point) => new Date(point.timestamp).getUTCDate() === 1
+          ) ||
+          monthData.find(
+            (point) => new Date(point.timestamp).getUTCDate() <= 5
+          ) ||
+          monthData[0];
+
+        if (bestPoint) {
+          const date = new Date(bestPoint.timestamp);
+          monthlyData.push({
+            date: date.toLocaleDateString("en-US", {
+              month: "short",
+              year: "numeric",
+              timeZone: "UTC",
+            }),
+            timestamp: bestPoint.timestamp,
+            apy: bestPoint.apy || 0,
+            tvl: bestPoint.tvlUsd || 0,
+            actualDay: date.getUTCDate(),
+            fullDate: date.toISOString().split("T")[0],
+          });
+        }
+      });
+
+    return monthlyData
+      .sort(
+        (a, b) =>
+          new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+      )
+      .slice(-12);
   };
 
   // Handle pool selection
@@ -251,10 +292,15 @@ const DeFiDashboard = () => {
 
   // Check if pool should be locked (now using wagmi isConnected)
   const isPoolLocked = (pool: PoolData): boolean => {
-    return pool.category === 'Yield Aggregator' && !isConnected;
+    return pool.category === "Yield Aggregator" && !isConnected;
   };
 
-  const categories: CategoryType[] = ['All', 'Lending', 'Liquid Staking', 'Yield Aggregator'];
+  const categories: CategoryType[] = [
+    "All",
+    "Lending",
+    "Liquid Staking",
+    "Yield Aggregator",
+  ];
 
   // Pool Detail View Component
   const PoolDetailView = () => {
@@ -262,7 +308,7 @@ const DeFiDashboard = () => {
 
     return (
       <div className="space-y-6">
-        <Button 
+        <Button
           onClick={() => setSelectedPool(null)}
           variant="outline"
           size="sm"
@@ -272,42 +318,26 @@ const DeFiDashboard = () => {
         </Button>
 
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Current APY</CardTitle>
-              <TrendingUp className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{formatPercent(selectedPool.apy)}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Value Locked</CardTitle>
-              <DollarSign className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{formatNumber(selectedPool.tvlUsd)}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">30-day Avg APY</CardTitle>
-              <BarChart3 className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{formatPercent(selectedPool.apyMean30d)}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Risk Score</CardTitle>
-              <Target className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{selectedPool.sigma?.toFixed(3) || 'N/A'}</div>
-            </CardContent>
-          </Card>
+          <StatCard
+            title="Current APY"
+            value={formatPercent(selectedPool.apy)}
+            icon={TrendingUp}
+          />
+          <StatCard
+            title="Total Value Locked"
+            value={formatNumber(selectedPool.tvlUsd)}
+            icon={DollarSign}
+          />
+          <StatCard
+            title="30-day Avg APY"
+            value={formatPercent(selectedPool.apyMean30d)}
+            icon={BarChart3}
+          />
+          <StatCard
+            title="Risk Score"
+            value={selectedPool.sigma?.toFixed(3) || "N/A"}
+            icon={Target}
+          />
         </div>
 
         <Card>
@@ -322,9 +352,11 @@ const DeFiDashboard = () => {
             ) : historicalData.length > 0 ? (
               <div className="space-y-4">
                 <div className="text-sm text-muted-foreground">
-                  Showing {historicalData.length} data points from {historicalData[0]?.fullDate} to {historicalData[historicalData.length - 1]?.fullDate}
+                  Showing {historicalData.length} data points from{" "}
+                  {historicalData[0]?.fullDate} to{" "}
+                  {historicalData[historicalData.length - 1]?.fullDate}
                 </div>
-                
+
                 <ChartContainer
                   config={{
                     apy: {
@@ -361,19 +393,21 @@ const DeFiDashboard = () => {
                     />
                     <ChartTooltip
                       cursor={false}
-                      content={<ChartTooltipContent 
-                        formatter={(value) => [
-                          `${Number(value).toFixed(4)}%`,
-                          'APY'
-                        ]}
-                        labelFormatter={(label, payload) => {
-                          if (payload && payload[0]) {
-                            const data = payload[0].payload;
-                            return `${label} (${data.fullDate})`;
-                          }
-                          return label;
-                        }}
-                      />}
+                      content={
+                        <ChartTooltipContent
+                          formatter={(value) => [
+                            `${Number(value).toFixed(4)}%`,
+                            "APY",
+                          ]}
+                          labelFormatter={(label, payload) => {
+                            if (payload && payload[0]) {
+                              const data = payload[0].payload;
+                              return `${label} (${data.fullDate})`;
+                            }
+                            return label;
+                          }}
+                        />
+                      }
                     />
                     <defs>
                       <linearGradient id="fillApy" x1="0" y1="0" x2="0" y2="1">
@@ -451,13 +485,17 @@ const DeFiDashboard = () => {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl font-bold">
-                {selectedPool ? `${selectedPool.project} - ${selectedPool.symbol}` : 'DeFi Pools'}
+                {selectedPool
+                  ? `${selectedPool.project} - ${selectedPool.symbol}`
+                  : "DeFi Pools"}
               </h1>
               <p className="text-muted-foreground">
-                {selectedPool ? selectedPool.category : 'Explore lending, liquid staking, and yield aggregator pools'}
+                {selectedPool
+                  ? selectedPool.category
+                  : "Explore lending, liquid staking, and yield aggregator pools"}
               </p>
             </div>
-            
+
             {/* Clean Custom Connect Button */}
             <div className="flex items-center gap-4">
               {address && (
@@ -478,53 +516,32 @@ const DeFiDashboard = () => {
             <div className="space-y-6">
               {/* Stats Overview */}
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Total Pools</CardTitle>
-                    <BarChart3 className="h-4 w-4 text-muted-foreground" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">{pools.length}</div>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Total TVL</CardTitle>
-                    <DollarSign className="h-4 w-4 text-muted-foreground" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">
-                      {formatNumber(pools.reduce((sum, pool) => sum + (pool.tvlUsd || 0), 0))}
-                    </div>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Average APY</CardTitle>
-                    <TrendingUp className="h-4 w-4 text-muted-foreground" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">
-                      {formatPercent(pools.reduce((sum, pool) => sum + (pool.apy || 0), 0) / pools.length)}
-                    </div>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Wallet Status</CardTitle>
-                    <Lock className="h-4 w-4 text-muted-foreground" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">
-                      {isConnected ? 'Connected' : 'Disconnected'}
-                    </div>
-                    {address && (
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {address.slice(0, 6)}...{address.slice(-4)}
-                      </p>
-                    )}
-                  </CardContent>
-                </Card>
+                <StatCard
+                  title="Total Pools"
+                  value={pools.length}
+                  icon={BarChart3}
+                />
+                <StatCard
+                  title="Total TVL"
+                  value={formatNumber(
+                    pools.reduce((sum, pool) => sum + (pool.tvlUsd || 0), 0)
+                  )}
+                  icon={DollarSign}
+                />
+                <StatCard
+                  title="Average APY"
+                  value={formatPercent(
+                    pools.reduce((sum, pool) => sum + (pool.apy || 0), 0) /
+                      pools.length
+                  )}
+                  icon={TrendingUp}
+                />
+                <StatCard
+                  title="Wallet Status"
+                  value={isConnected ? "Connected" : "Disconnected"}
+                  icon={Lock}
+                  subtitle={address ? `${address.slice(0, 6)}...${address.slice(-4)}` : undefined}
+                />
               </div>
 
               {/* Category Filters */}
@@ -532,7 +549,9 @@ const DeFiDashboard = () => {
                 {categories.map((category) => (
                   <Button
                     key={category}
-                    variant={selectedCategory === category ? "default" : "outline"}
+                    variant={
+                      selectedCategory === category ? "default" : "outline"
+                    }
                     size="sm"
                     onClick={() => setSelectedCategory(category)}
                   >
@@ -541,72 +560,100 @@ const DeFiDashboard = () => {
                 ))}
               </div>
 
-            {/* Pools Table */}
-<Card>
-  <CardHeader>
-    <CardTitle>DeFi Pools</CardTitle>
-  </CardHeader>
-  <CardContent>
-    <div className="overflow-auto">
-      <table className="w-full caption-bottom text-sm">
-        <thead className="[&_tr]:border-b">
-          <tr className="border-b transition-colors hover:bg-muted/50">
-            <th className="h-12 px-4 text-left align-middle font-medium">Project</th>
-            <th className="h-12 px-4 text-left align-middle font-medium">Category</th>
-            <th className="h-12 px-4 text-left align-middle font-medium">Symbol</th>
-            <th className="h-12 px-4 text-left align-middle font-medium">Current APY</th>
-            <th className="h-12 px-4 text-left align-middle font-medium">TVL</th>
-            <th className="h-12 px-4 text-left align-middle font-medium">30d Avg APY</th>
-            <th className="h-12 px-4 text-left align-middle font-medium">Risk</th>
-            <th className="h-12 px-4 text-left align-middle font-medium">Status</th>
-          </tr>
-        </thead>
-        <tbody className="[&_tr:last-child]:border-0">
-          {filteredPools.map((pool) => {
-            const locked = isPoolLocked(pool);
-            return (
-              <tr
-                key={pool.pool}
-                className={`border-b transition-colors hover:bg-muted/50 ${
-                  locked ? 'opacity-50' : 'cursor-pointer'
-                }`}
-                onClick={() => !locked && handlePoolClick(pool)}
-              >
-                <td className="p-4 align-middle font-medium">
-                  {pool.project}
-                  {locked && <Lock className="inline ml-2 h-3 w-3" />}
-                </td>
-                <td className="p-4 align-middle">
-                  <span className="text-sm font-medium">
-                    {pool.category}
-                  </span>
-                </td>
-                <td className="p-4 align-middle">{pool.symbol}</td>
-                <td className="p-4 align-middle font-medium">{formatPercent(pool.apy)}</td>
-                <td className="p-4 align-middle">{formatNumber(pool.tvlUsd)}</td>
-                <td className="p-4 align-middle">{formatPercent(pool.apyMean30d)}</td>
-                <td className="p-4 align-middle">
-                  {pool.sigma && (
-                    <span className="text-sm font-medium">
-                      {pool.sigma.toFixed(3)}
-                    </span>
-                  )}
-                </td>
-                <td className="p-4 align-middle">
-                  {locked ? (
-                    <Badge variant="destructive">Locked</Badge>
-                  ) : (
-                    <span className="text-sm font-medium">Available</span>
-                  )}
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
-    </div>
-  </CardContent>
-</Card>
+              {/* Pools Table */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>DeFi Pools</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="overflow-auto">
+                    <table className="w-full caption-bottom text-sm">
+                      <thead className="[&_tr]:border-b">
+                        <tr className="border-b transition-colors hover:bg-muted/50">
+                          <th className="h-12 px-4 text-left align-middle font-medium">
+                            Project
+                          </th>
+                          <th className="h-12 px-4 text-left align-middle font-medium">
+                            Category
+                          </th>
+                          <th className="h-12 px-4 text-left align-middle font-medium">
+                            Symbol
+                          </th>
+                          <th className="h-12 px-4 text-left align-middle font-medium">
+                            Current APY
+                          </th>
+                          <th className="h-12 px-4 text-left align-middle font-medium">
+                            TVL
+                          </th>
+                          <th className="h-12 px-4 text-left align-middle font-medium">
+                            30d Avg APY
+                          </th>
+                          <th className="h-12 px-4 text-left align-middle font-medium">
+                            Risk
+                          </th>
+                          <th className="h-12 px-4 text-left align-middle font-medium">
+                            Status
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="[&_tr:last-child]:border-0">
+                        {filteredPools.map((pool) => {
+                          const locked = isPoolLocked(pool);
+                          return (
+                            <tr
+                              key={pool.pool}
+                              className={`border-b transition-colors hover:bg-muted/50 ${
+                                locked ? "opacity-50" : "cursor-pointer"
+                              }`}
+                              onClick={() => !locked && handlePoolClick(pool)}
+                            >
+                              <td className="p-4 align-middle font-medium">
+                                {pool.project}
+                                {locked && (
+                                  <Lock className="inline ml-2 h-3 w-3" />
+                                )}
+                              </td>
+                              <td className="p-4 align-middle">
+                                <span className="text-sm font-medium">
+                                  {pool.category}
+                                </span>
+                              </td>
+                              <td className="p-4 align-middle">
+                                {pool.symbol}
+                              </td>
+                              <td className="p-4 align-middle font-medium">
+                                {formatPercent(pool.apy)}
+                              </td>
+                              <td className="p-4 align-middle">
+                                {formatNumber(pool.tvlUsd)}
+                              </td>
+                              <td className="p-4 align-middle">
+                                {formatPercent(pool.apyMean30d)}
+                              </td>
+                              <td className="p-4 align-middle">
+                                {pool.sigma && (
+                                  <span className="text-sm font-medium">
+                                    {pool.sigma.toFixed(3)}
+                                  </span>
+                                )}
+                              </td>
+                              <td className="p-4 align-middle">
+                                {locked ? (
+                                  <Badge variant="destructive">Locked</Badge>
+                                ) : (
+                                  <span className="text-sm font-medium">
+                                    Available
+                                  </span>
+                                )}
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
           )}
         </main>
