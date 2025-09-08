@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/chart";
 
 import type { PoolData, ProcessedDataPoint } from "../types/dashboard";
+import { formatNumber, formatPercent } from "../utils/formatters";
 
 interface PoolDetailViewProps {
   selectedPool: PoolData | null;
@@ -33,17 +34,6 @@ const PoolDetailView: React.FC<PoolDetailViewProps> = ({
   onBackClick,
 }) => {
   if (!selectedPool) return null;
-
-  const formatNumber = (num: number | null | undefined): string => {
-    if (!num) return "N/A";
-    if (num >= 1e9) return `$${(num / 1e9).toFixed(2)}B`;
-    if (num >= 1e6) return `$${(num / 1e6).toFixed(2)}M`;
-    if (num >= 1e3) return `$${(num / 1e3).toFixed(2)}K`;
-    return `$${num.toFixed(2)}`;
-  };
-
-  const formatPercent = (num: number | null | undefined): string =>
-    num ? `${num.toFixed(2)}%` : "N/A";
 
   return (
     <div className="space-y-6">
