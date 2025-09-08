@@ -13,7 +13,7 @@ export const usePoolData = () => {
         const data = await poolsApi.fetchPools();
 
         const filteredPools: PoolData[] = data
-          .filter((pool: PoolData) => TARGET_POOL_IDS.includes(pool.pool))
+          .filter((pool: PoolData) => (TARGET_POOL_IDS as readonly string[]).includes(pool.pool))
           .map((pool: PoolData) => ({
             ...pool,
             category: CATEGORY_MAPPING[pool.pool] || "Unknown",
